@@ -1,12 +1,15 @@
 'use strict';
 
 // Declare app level module which depends on views, and components
-angular.module('myApp', [
+var app = angular.module('myApp', [
   'ngRoute',
+  'ngFileUpload',
   'myApp.view1',
   'myApp.view2',
+  'myApp.fileupload',
   'myApp.version'
-]).
-config(['$routeProvider', function($routeProvider) {
-  $routeProvider.otherwise({redirectTo: '/view1'});
+]);
+
+app.config(['$routeProvider', function($routeProvider) {
+  $routeProvider.otherwise({redirectTo: '/pages/fileupload'});
 }]);
