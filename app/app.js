@@ -4,10 +4,7 @@
 var app = angular.module('myApp', [
   'ngRoute',
   'ngFileUpload',
-  'myApp.view1',
-  'myApp.view2',
-  'myApp.fileupload',
-  'myApp.version'
+  'myApp.fileupload'
 ]);
 
 app.config(['$routeProvider', function($routeProvider) {

@@ -1,30 +1,14 @@
 <div ng-controller="FileuploadController as vm">
+    <input type="number" ng-model="vm.resolution"/>
     <button type="file" ngf-select="vm.uploadTerrainImage($file)" accept="image/*" ngf-max-size="5MB">Terrain File</button>
-
     <button ng-click="vm.analyzeTerrain()" ng-show="vm.hasTerrainImage">Analyze Terrain</button>
-
     <canvas width="0" height="0" id="terrainCanvas"></canvas>
 
 
     <button type="file" ngf-select="vm.uploadImage($file)" accept="image/*" ngf-max-size="5MB">Image File</button>
-
-    <button ng-click="vm.analyzeImage()" ng-show="vm.hasImage && vm.hasTerrainImage && vm.pixelData != null">Analyze Image</button>
-
+    <button ng-click="vm.analyzeImage(vm.resolution)" ng-show="vm.hasImage && vm.hasTerrainImage && vm.pixelData != null">Analyze Image</button>
     <canvas width="0" height="0" id="imageCanvas"></canvas>
 
 
     <canvas width="0" height="0" id="outputCanvas"></canvas>
-
-    <!--
-    File:
-    <div style="font:smaller">{{vm.f.name}} {{vm.f.$error}} {{vm.f.$errorParam}}
-      <span class="progress" ng-show="vm.f.progress >= 0">
-          <div style="width:{{vm.f.progress}}%"
-               ng-bind="vm.f.progress + '%'"></div>
-      </span>
-    </div>
-    {{errorMsg}}
-
-    <div>{{vm.pixelData}}</div>
-    -->
 </div>
