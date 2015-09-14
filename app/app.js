@@ -4,6 +4,7 @@
 var app = angular.module('myApp', [
   'ngRoute',
   'ngFileUpload',
+  'ui.bootstrap',
   'myApp.fileupload'
 ]);
 

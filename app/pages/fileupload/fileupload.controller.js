@@ -10,7 +10,6 @@ app.config(['$routeProvider', function($routeProvider) {
 }]);
 
 app.controller('FileuploadController', ['AnalyzeFactory', 'Upload', '$timeout', function(AnalyzeFactory, Upload, $timeout) {
-
   var vm = this;
   vm.hasTerrainImage = false;
   vm.hasImage = false;

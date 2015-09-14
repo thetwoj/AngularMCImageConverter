@@ -4,7 +4,30 @@
 var app = angular.module('myApp.fileupload');
 
 app.factory('AnalyzeFactory', [function(){
-    var pixelData = null;
+    var blockAverageRgbValues = {};
+    function rgbValue(rValue, gValue, bValue) {
+        this.rValue = rValue;
+        this.gValue = gValue;
+        this.bValue = bValue;
+        this.sub = function(otherRgbValue) {
+            this.rValue = this.rValue - otherRgbValue.rValue;
+            this.gValue = this.gValue - otherRgbValue.gValue;
+            this.bValue = this.bValue - otherRgbValue.bValue;
+            return this;
+        };
+        this.add = function(otherRgbValue){
+            this.rValue = this.rValue + otherRgbValue.rValue;
+            this.gValue = this.gValue + otherRgbValue.gValue;
+            this.bValue = this.bValue + otherRgbValue.bValue;
+            return this;
+        };
+        this.mult = function(multValue){
+            this.rValue = this.rValue * multValue;
+            this.gValue = this.gValue * multValue;
+            this.bValue = this.bValue * multValue;
+            return this;
+        };
+    }
 
     var terrainSource = function (path) {
         var canvas = document.getElementById('terrainCanvas');
@@ -24,8 +47,7 @@ app.factory('AnalyzeFactory', [function(){
         var canvas = document.getElementById('terrainCanvas');
         var ctx = canvas.getContext('2d');
 
-        var blockAverageData = {};
-        var blockCount = 0;
+        var blockIndex = 0;
 
         for (var y = 0; y <= canvas.height-16; y += 16) {
             for (var x = 0; x <= canvas.width-16; x += 16) {
@@ -44,15 +66,15 @@ app.factory('AnalyzeFactory', [function(){
                     }
                 }
 
-                blockAverageData[blockCount] = [
-                    Math.floor(blockTotals['r']/256),
-                    Math.floor(blockTotals['g']/256),
-                    Math.floor(blockTotals['b']/256)
-                ];
-                blockCount++;
+                blockAverageRgbValues[blockIndex] = new rgbValue
+                (
+                    Math.floor(blockTotals['r'] / 256),
+                    Math.floor(blockTotals['g'] / 256),
+                    Math.floor(blockTotals['b'] / 256)
+                );
+                blockIndex++;
             }
         }
-        pixelData = blockAverageData;
     };
 
     var uploadImage = function (file) {
@@ -81,6 +103,22 @@ app.factory('AnalyzeFactory', [function(){
         var imageAverageData = createArray(Math.floor(canvas.width/resolution), Math.floor(canvas.height/resolution));
         var blockOutputData = createArray(Math.floor(canvas.width/resolution), Math.floor(canvas.height/resolution));
 
+        /*
+        var tempText = '';
+        var pseudoMatrix = createArray(32, 32, 32);
+        for (var r = 0; r < 255; r += 8) {
+            for (var g = 0; g < 255; g += 8) {
+                for (var b = 0; b < 255; b += 8) {
+                    var tempValue = new rgbValue(r, g, b);
+                    pseudoMatrix[r/8][g/8][b/8] = findClosestBlock(tempValue);
+                    tempText += '(' + r + ',' + g + ',' + b + '[' + pseudoMatrix[r/8][g/8][b/8] + '])';
+                }
+            }
+        }
+
+        console.log(tempText);
+        */
+
         for (var x = 0; x <= canvas.width - resolution; x += resolution) {
             for (var y = 0; y <= canvas.height - resolution; y += resolution) {
                 var currentRectangle = ctx.getImageData(x, y, resolution, resolution).data;
@@ -96,95 +134,34 @@ app.factory('AnalyzeFactory', [function(){
                         blockTotals['b'] += value;
                     }
                 }
-                imageAverageData[x/resolution][y/resolution] = [
+                imageAverageData[x/resolution][y/resolution] = new rgbValue(
                     Math.floor(blockTotals['r']/(resolution*resolution)),
                     Math.floor(blockTotals['g']/(resolution*resolution)),
                     Math.floor(blockTotals['b']/(resolution*resolution))
-                ];
+                );
             }
         }
 
         // Floyd Steinberg dithering
-        /*
         for (var x = 0; x < imageAverageData.length; x += 1) {
             for (var y = 0; y < imageAverageData[x].length; y += 1) {
 
                 var w = imageAverageData.length;
                 var h = imageAverageData[x].length;
 
-                var currentMin = 255;
-                var currentBlock = 0;
-                for (var blockIndex = 0; blockIndex < Object.keys(pixelData).length; blockIndex++) {
+                var closestBlockIndex = findClosestBlock(imageAverageData[x][y]);
 
-                    var averageDiff = Math.sqrt(
-                        Math.pow(pixelData[blockIndex][0] - imageAverageData[x][y][0], 2) +
-                        Math.pow(pixelData[blockIndex][1] - imageAverageData[x][y][1], 2) +
-                        Math.pow(pixelData[blockIndex][2] - imageAverageData[x][y][2], 2)
-                    );
+                var oldColor = imageAverageData[x][y];
+                var newColor = blockAverageRgbValues[closestBlockIndex];
 
-                    if (averageDiff < currentMin) {
-                        currentMin = averageDiff;
-                        currentBlock = blockIndex;
-                    }
-                }
+                var err = oldColor.sub(newColor);
 
-                oldColor = imageAverageData[x][y];
-                newColor = pixelData[currentBlock];
+                if (x+1 < w)                {imageAverageData[x+1][y].add(err.mult(7./16));}
+                if (x-1 >= 0 && y+1 < h)    {imageAverageData[x-1][y+1].add(err.mult(3./16));}
+                if (y+1 < h)                {imageAverageData[x][y+1].add(err.mult(5./16));}
+                if (x+1 < w && y+1 < h)     {imageAverageData[x+1][y+1].add(err.mult(1./16));}
 
-                var err = [newColor[0] - oldColor[0], newColor[1] - oldColor[1], newColor[2] - oldColor[2]];
-
-                if (x+1 < w) {
-                    imageAverageData[x+1][y] = [
-                        imageAverageData[x+1][y][0] + err[0]*7/16,
-                        imageAverageData[x+1][y][1] + err[1]*7/16,
-                        imageAverageData[x+1][y][2] + err[2]*7/16
-                    ];
-                }
-                if (x-1 >= 0 && y+1 < h) {
-                    imageAverageData[x-1][y+1] =[
-                        imageAverageData[x-1][y+1][0] + err[0]*3/16,
-                        imageAverageData[x-1][y+1][1] + err[1]*3/16,
-                        imageAverageData[x-1][y+1][2] + err[2]*3/16
-                    ];
-                }
-                if (y+1 < h) {
-                    imageAverageData[x][y+1] = [
-                        imageAverageData[x][y+1][0] + err[0]*5/16,
-                        imageAverageData[x][y+1][1] + err[1]*5/16,
-                        imageAverageData[x][y+1][2] + err[2]*5/16
-                    ]
-                }
-                if (x+1 < w && y+1 < h) {
-                    imageAverageData[x+1][y+1] = [
-                        imageAverageData[x+1][y+1][0] + err[0]*1/16,
-                        imageAverageData[x+1][y+1][1] + err[1]*1/16,
-                        imageAverageData[x+1][y+1][2] + err[2]*1/16
-                    ]
-                }
-
-                blockOutputData[x][y] = currentBlock;
-            }
-        }*/
-
-        // Nearest color match
-        for (var x = 0; x < imageAverageData.length; x += 1) {
-            for (var y = 0; y < imageAverageData[x].length; y += 1) {
-                var currentMin = 255;
-                var currentBlock = 0;
-                for (var blockIndex = 0; blockIndex < Object.keys(pixelData).length; blockIndex++) {
-
-                    var averageDiff = Math.sqrt(
-                        Math.pow(pixelData[blockIndex][0] - imageAverageData[x][y][0], 2) +
-                        Math.pow(pixelData[blockIndex][1] - imageAverageData[x][y][1], 2) +
-                        Math.pow(pixelData[blockIndex][2] - imageAverageData[x][y][2], 2)
-                    );
-
-                    if (averageDiff < currentMin) {
-                        currentMin = averageDiff;
-                        currentBlock = blockIndex;
-                    }
-                }
-                blockOutputData[x][y] = currentBlock;
+                blockOutputData[x][y] = closestBlockIndex;
             }
         }
 
@@ -209,6 +186,27 @@ app.factory('AnalyzeFactory', [function(){
             }
         }
     };
+
+    function findClosestBlock(sourceRgbValue){
+        var currentMin = null;
+        var closestBlockIndex = 0;
+        for (var blockIndex = 0; blockIndex < Object.keys(blockAverageRgbValues).length; blockIndex++) {
+
+            var averageDiff =
+                Math.pow(blockAverageRgbValues[blockIndex].rValue - sourceRgbValue.rValue, 2) +
+                Math.pow(blockAverageRgbValues[blockIndex].gValue - sourceRgbValue.gValue, 2) +
+                Math.pow(blockAverageRgbValues[blockIndex].bValue - sourceRgbValue.bValue, 2);
+
+            if (currentMin == null) {
+                currentMin = averageDiff;
+            }
+            if (averageDiff < currentMin) {
+                currentMin = averageDiff;
+                closestBlockIndex = blockIndex;
+            }
+        }
+        return closestBlockIndex;
+    }
 
     function createArray(length) {
         var arr = new Array(length || 0),
