@@ -3,8 +3,10 @@
  */
 var app = angular.module('myApp.fileupload');
 
-app.factory('AnalyzeFactory', [function(){
+app.factory('AnalyzeFactory', ['$http', function($http){
     var blockAverageRgbValues = {};
+    var blockImages = {};
+    var blockLookupTable = createArray(32, 32, 32);
     function rgbValue(rValue, gValue, bValue) {
         this.rValue = rValue;
         this.gValue = gValue;
@@ -41,7 +43,37 @@ app.factory('AnalyzeFactory', [function(){
             ctx.drawImage(img, 0, 0);
             analyzeTerrain();
         }
+
+        $http.get('/assets/matrixData.txt').then(function(response){
+            //console.log(response.data);
+            analyzeMatrixData(response.data);
+        });
     };
+
+    function analyzeMatrixData(rawMatrixData){
+        var rawValues = rawMatrixData.split(';');
+        var currentIndex = 0;
+        var currentValues = rawValues[currentIndex];
+        var currentRepeat = parseInt(currentValues.split(',')[0]);
+        var currentBlockIndex = parseInt(currentValues.split(',')[1]);
+
+        for (var r = 0; r < 32; r += 1) {
+            for (var g = 0; g < 32; g += 1) {
+                for (var b = 0; b < 32; b += 1) {
+                    blockLookupTable[r][g][b] = currentBlockIndex;
+                    currentRepeat -= 1;
+
+                    if (currentRepeat < 0) {
+                        currentIndex += 1;
+                        currentValues = rawValues[currentIndex];
+                        currentRepeat = parseInt(currentValues.split(',')[0]);
+                        currentBlockIndex = parseInt(currentValues.split(',')[1]);
+                    }
+                }
+            }
+        }
+        console.log(blockLookupTable);
+    }
 
     var analyzeTerrain = function () {
         var canvas = document.getElementById('terrainCanvas');
@@ -52,11 +84,12 @@ app.factory('AnalyzeFactory', [function(){
         for (var y = 0; y <= canvas.height-16; y += 16) {
             for (var x = 0; x <= canvas.width-16; x += 16) {
 
-                var currentRectangle = ctx.getImageData(x, y, 16, 16).data;
+                var currentRectangle = ctx.getImageData(x, y, 16, 16);
+                var currentRectangleData = currentRectangle.data;
                 var blockTotals = {'r':0, 'g':0, 'b':0};
 
-                for(var index = 0; index < currentRectangle.length; index++) {
-                    var value = currentRectangle[index];
+                for(var index = 0; index < currentRectangleData.length; index++) {
+                    var value = currentRectangleData[index];
                     if (index % 4 == 0) {
                         blockTotals['r'] += value;
                     } else if (index % 4 == 1) {
@@ -66,6 +99,7 @@ app.factory('AnalyzeFactory', [function(){
                     }
                 }
 
+                blockImages[blockIndex] = currentRectangle;
                 blockAverageRgbValues[blockIndex] = new rgbValue
                 (
                     Math.floor(blockTotals['r'] / 256),
@@ -105,13 +139,13 @@ app.factory('AnalyzeFactory', [function(){
 
         /*
         var tempText = '';
-        var pseudoMatrix = createArray(32, 32, 32);
+        var arrayMatrix = createArray(32, 32, 32);
         for (var r = 0; r < 255; r += 8) {
             for (var g = 0; g < 255; g += 8) {
                 for (var b = 0; b < 255; b += 8) {
                     var tempValue = new rgbValue(r, g, b);
-                    pseudoMatrix[r/8][g/8][b/8] = findClosestBlock(tempValue);
-                    tempText += '(' + r + ',' + g + ',' + b + '[' + pseudoMatrix[r/8][g/8][b/8] + '])';
+                    arrayMatrix[r/8][g/8][b/8] = findClosestBlock(tempValue);
+                    tempText += '(' + r + ',' + g + ',' + b + '[' + arrayMatrix[r/8][g/8][b/8] + '])';
                 }
             }
         }
@@ -149,7 +183,8 @@ app.factory('AnalyzeFactory', [function(){
                 var w = imageAverageData.length;
                 var h = imageAverageData[x].length;
 
-                var closestBlockIndex = findClosestBlock(imageAverageData[x][y]);
+                //var closestBlockIndex = findClosestBlock(imageAverageData[x][y]);
+                var closestBlockIndex = findLookupTableBlock(imageAverageData[x][y]);
 
                 var oldColor = imageAverageData[x][y];
                 var newColor = blockAverageRgbValues[closestBlockIndex];
@@ -174,18 +209,25 @@ app.factory('AnalyzeFactory', [function(){
         for (var x = 0; x < blockOutputData.length; x += 1) {
             for (var y = 0; y < blockOutputData[x].length; y += 1) {
 
-                var currentRectangle =
-                    ctx.getImageData(
+                var currentRectangle = blockImages[blockOutputData[x][y]];
+                    /*ctx.getImageData(
                         (blockOutputData[x][y] % (terrainColumns)) * 16,
                         (Math.floor(blockOutputData[x][y] / (terrainColumns)) * 16),
                         16,
                         16
-                    );
+                    );*/
 
                 outputCtx.putImageData(currentRectangle, x * 16, y * 16);
             }
         }
     };
+
+    function findLookupTableBlock(sourceRgbValue){
+        return blockLookupTable
+            [Math.max(0,Math.min(31,Math.floor(sourceRgbValue.rValue/8)))]
+            [Math.max(0,Math.min(31,Math.floor(sourceRgbValue.gValue/8)))]
+            [Math.max(0,Math.min(31,Math.floor(sourceRgbValue.bValue/8)))];
+    }
 
     function findClosestBlock(sourceRgbValue){
         var currentMin = null;

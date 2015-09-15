@@ -16,7 +16,7 @@ app.controller('FileuploadController', ['AnalyzeFactory', 'Upload', '$timeout', 
   vm.pixelData = null;
   vm.resolution = 16;
 
-  AnalyzeFactory.terrainSource("/assets/textures_full_sides.png");
+  AnalyzeFactory.terrainSource('/assets/textures_full_sides.png');
   vm.hasTerrainImage = true;
 
   vm.uploadImage = function(file) {
