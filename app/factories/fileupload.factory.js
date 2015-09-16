@@ -45,7 +45,6 @@ app.factory('AnalyzeFactory', ['$http', function($http){
         }
 
         $http.get('/assets/matrixData.txt').then(function(response){
-            //console.log(response.data);
             analyzeMatrixData(response.data);
         });
     };
@@ -72,7 +71,6 @@ app.factory('AnalyzeFactory', ['$http', function($http){
                 }
             }
         }
-        console.log(blockLookupTable);
     }
 
     var analyzeTerrain = function () {
@@ -126,6 +124,22 @@ app.factory('AnalyzeFactory', ['$http', function($http){
         }
     };
 
+    function getRectangle(entireImage, x, y, width, height, canvas) {
+        var rectangleData = [];
+        //console.log(x, y, width, height);
+        for (var xIndex = x; xIndex < x + width; xIndex += 1) {
+            for (var yIndex = y; yIndex < y + height; yIndex += 1) {
+                var tempY = yIndex * canvas.width * 4 + 4 * (xIndex + 1);
+                var tempX = tempY - 4;
+                var tempData = entireImage.subarray(tempX, tempY);
+                for (var index = 0; index < tempData.length; index ++) {
+                    rectangleData.push(tempData[index]);
+                }
+            }
+        }
+        return rectangleData;
+    }
+
     var analyzeImage = function (resolution) {
         var canvas = document.getElementById('imageCanvas');
         var ctx = canvas.getContext('2d');
@@ -136,6 +150,9 @@ app.factory('AnalyzeFactory', ['$http', function($http){
 
         var imageAverageData = createArray(Math.floor(canvas.width/resolution), Math.floor(canvas.height/resolution));
         var blockOutputData = createArray(Math.floor(canvas.width/resolution), Math.floor(canvas.height/resolution));
+
+        var entireImage = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+        //console.log(entireImage);
 
         /*
         var tempText = '';
@@ -155,7 +172,8 @@ app.factory('AnalyzeFactory', ['$http', function($http){
 
         for (var x = 0; x <= canvas.width - resolution; x += resolution) {
             for (var y = 0; y <= canvas.height - resolution; y += resolution) {
-                var currentRectangle = ctx.getImageData(x, y, resolution, resolution).data;
+                var currentRectangle = getRectangle(entireImage, x, y, resolution, resolution, canvas);
+                //var currentRectangle = ctx.getImageData(x, y, resolution, resolution).data;
                 var blockTotals = {'r':0, 'g':0, 'b':0};
 
                 for(var index = 0; index < currentRectangle.length; index++) {
@@ -183,7 +201,6 @@ app.factory('AnalyzeFactory', ['$http', function($http){
                 var w = imageAverageData.length;
                 var h = imageAverageData[x].length;
 
-                //var closestBlockIndex = findClosestBlock(imageAverageData[x][y]);
                 var closestBlockIndex = findLookupTableBlock(imageAverageData[x][y]);
 
                 var oldColor = imageAverageData[x][y];
@@ -210,13 +227,6 @@ app.factory('AnalyzeFactory', ['$http', function($http){
             for (var y = 0; y < blockOutputData[x].length; y += 1) {
 
                 var currentRectangle = blockImages[blockOutputData[x][y]];
-                    /*ctx.getImageData(
-                        (blockOutputData[x][y] % (terrainColumns)) * 16,
-                        (Math.floor(blockOutputData[x][y] / (terrainColumns)) * 16),
-                        16,
-                        16
-                    );*/
-
                 outputCtx.putImageData(currentRectangle, x * 16, y * 16);
             }
         }
