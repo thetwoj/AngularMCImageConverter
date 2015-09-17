@@ -1,9 +1,8 @@
-<div ng-controller="FileuploadController as vm">
+<div ng-controller="ConversionController as vm">
     <input type="number" ng-model="vm.resolution"/>
-    <!--<button type="file" ngf-select="vm.uploadTerrainImage($file)" accept="image/*" ngf-max-size="5MB">Terrain File</button>
-    <button ng-click="vm.analyzeTerrain()" ng-show="vm.hasTerrainImage">Analyze Terrain</button>-->
-    <canvas width="0" height="0" id="terrainCanvas" ng-hide="true"></canvas>
-
+    <!--<button type="file" ngf-select="vm.uploadTextureImage($file)" accept="image/*" ngf-max-size="5MB">Texture File</button>
+    <button ng-click="vm.analyzeTexture()" ng-show="vm.hasTextureImage">Analyze Texture</button>-->
+    <canvas width="0" height="0" id="textureCanvas" ng-hide="true"></canvas>
 
     <button type="file" ngf-select="vm.uploadImage($file)" accept="image/*" ngf-max-size="5MB">Image File</button>
     <button ng-click="vm.analyzeImage(vm.resolution)" ng-show="vm.hasImage && vm.hasTerrainImage">Analyze Image</button>

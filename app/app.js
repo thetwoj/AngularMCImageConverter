@@ -5,9 +5,9 @@ var app = angular.module('myApp', [
   'ngRoute',
   'ngFileUpload',
   'ui.bootstrap',
-  'myApp.fileupload'
+  'myApp.conversion'
 ]);
 
 app.config(['$routeProvider', function($routeProvider) {
-  $routeProvider.otherwise({redirectTo: '/pages/fileupload'});
+  $routeProvider.otherwise({redirectTo: '/pages/conversion'});
 }]);
