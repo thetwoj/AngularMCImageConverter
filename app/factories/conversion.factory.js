@@ -15,9 +15,13 @@ app.factory('ConversionFactory', ['TextureFactory', 'ImageFactory', function(Tex
 
         var sourceCanvas = document.getElementById('imageCanvas');
         var outputCanvas = document.getElementById('outputCanvas');
+        var secretCanvas = document.getElementById('secretCanvas');
 
         outputCanvas.width = sourceCanvas.width * 16/resolution;
         outputCanvas.height = sourceCanvas.height * 16/resolution;
+
+        secretCanvas.width = outputCanvas.width;
+        secretCanvas.height = outputCanvas.height;
 
         var imageAverageData = createArray(Math.floor(sourceCanvas.width/resolution), Math.floor(sourceCanvas.height/resolution));
         var blockOutputData = createArray(Math.floor(sourceCanvas.width/resolution), Math.floor(sourceCanvas.height/resolution));
@@ -26,6 +30,7 @@ app.factory('ConversionFactory', ['TextureFactory', 'ImageFactory', function(Tex
         blockOutputData = ditherImageToBlocks(imageAverageData, blockOutputData);
 
         drawConversionOutput(outputCanvas, blockOutputData);
+        drawConversionOutput(secretCanvas, blockOutputData);
     };
 
     function ditherImageToBlocks(imageAverageData, blockOutputData) {
@@ -59,7 +64,7 @@ app.factory('ConversionFactory', ['TextureFactory', 'ImageFactory', function(Tex
 
         for (var x = 0; x <= sourceCanvas.width - resolution; x += resolution) {
             for (var y = 0; y <= sourceCanvas.height - resolution; y += resolution) {
-                var currentRectangle = ImageFactory.getSourceImageRectangle(entireImage, x, y, resolution, resolution, sourceCanvas);
+                var currentRectangle = ImageFactory.getImageRectangle(entireImage, x, y, resolution, resolution, sourceCanvas);
                 var blockTotals = {'r':0, 'g':0, 'b':0};
 
                 for(var index = 0; index < currentRectangle.length; index++) {

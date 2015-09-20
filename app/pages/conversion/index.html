@@ -5,8 +5,12 @@
     <canvas width="0" height="0" id="textureCanvas" ng-hide="true"></canvas>
 
     <button type="file" ngf-select="vm.uploadImage($file)" accept="image/*" ngf-max-size="5MB">Image File</button>
-    <button ng-click="vm.analyzeImage(vm.resolution)" ng-show="vm.hasImage && vm.hasTerrainImage">Analyze Image</button>
+    <button ng-click="vm.analyzeImage(vm.resolution)" ng-show="vm.hasImage && vm.hasTextureImage">Analyze Image</button>
     <canvas width="0" height="0" id="imageCanvas"></canvas>
 
+    <button ng-click="vm.changeScale(.9)" ng-show="vm.hasImage && vm.hasTextureImage">-</button>
+    <button ng-click="vm.changeScale(1.1)" ng-show="vm.hasImage && vm.hasTextureImage">+</button>
+
     <canvas width="0" height="0" id="outputCanvas"></canvas>
+    <canvas width="0" height="0" id="secretCanvas" ng-hide="true"></canvas>
 </div>

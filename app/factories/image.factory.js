@@ -43,7 +43,7 @@ app.factory('ImageFactory', [function() {
     }
   };
 
-  function getSourceImageRectangle(entireImage, x, y, width, height, canvas) {
+  function getImageRectangle(entireImage, x, y, width, height, canvas) {
     var rectangleData = [];
     for (var xIndex = x; xIndex < x + width; xIndex += 1) {
       for (var yIndex = y; yIndex < y + height; yIndex += 1) {
@@ -58,9 +58,21 @@ app.factory('ImageFactory', [function() {
     return rectangleData;
   }
 
+  function scaleImage(canvas, scale) {
+    var ctx = canvas.getContext('2d');
+    var secretCanvas = document.getElementById('secretCanvas');
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    canvas.width = secretCanvas.width * scale;
+    canvas.height = secretCanvas.height * scale;
+    ctx.scale(scale, scale);
+    ctx.drawImage(secretCanvas, 0, 0);
+  }
+
   return {
     rgbValue: rgbValue,
     uploadImage: uploadImage,
-    getSourceImageRectangle: getSourceImageRectangle
+    scaleImage: scaleImage,
+    getImageRectangle: getImageRectangle
   }
 }]);
