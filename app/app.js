@@ -5,6 +5,7 @@ var app = angular.module('myApp', [
   'ngRoute',
   'ngFileUpload',
   'ui.bootstrap',
+  'ui.bootstrap-slider',
   'myApp.conversion'
 ]);
 
