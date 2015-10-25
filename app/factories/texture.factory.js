@@ -8,7 +8,7 @@ app.factory('TextureFactory', ['$http', 'ImageFactory', function($http, ImageFac
   var textureBlockImages = {};
   var rgbToTextureLookupArray = createArray(32, 32, 32);
 
-  var textureSource = function (path) {
+  function textureSource(path) {
     var canvas = document.getElementById('textureCanvas');
     var ctx = canvas.getContext('2d');
     var img = new Image;

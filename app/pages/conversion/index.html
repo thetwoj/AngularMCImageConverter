@@ -2,15 +2,20 @@
     <div class="page-header">
         <h1>Minecraft Image Converter <small>do it it's fun</small></h1>
     </div>
+
+    <div class="col-sm-12">
+    <label for="resolution">Output resolution</label>
+        </div>
+
     <div class="form-group">
-        <div class="col-sm-1 col-xs-2 text-center">
-            Small
+        <div class="col-sm-1 col-xs-2 text-center" id="resolution">
+            Low
         </div>
         <div class="col-sm-10 col-xs-8">
-            <slider ng-model="vm.resolution" min="1." step="1." max="30." slider-tooltip="hide" reversed="true"></slider>
+            <slider ng-model="vm.resolution" min="1." step="1." max="20." slider-tooltip="hide" reversed="true"></slider>
         </div>
         <div class="col-sm-1 col-xs-2 text-center">
-            Large
+            High
         </div>
     </div>
 
@@ -18,27 +23,27 @@
     <div class="col-sm-12" style="margin-bottom:10px;"></div>
 
     <div class="col-sm-6">
-        <button class="form-control" type="file" ngf-select="vm.uploadImage($file)" accept="image/*" ngf-max-size="5MB">Image File</button>
+        <button class="form-control" type="file" ngf-select="vm.uploadImage($file)" accept="image/*" ngf-max-size="5MB">Source image</button>
     </div>
     <div class="col-sm-6">
-        <button class="form-control" ng-click="vm.analyzeImage(vm.resolution)" ng-disabled="!vm.hasImage || !vm.hasTextureImage">Analyze Image</button>
+        <button class="form-control" ng-click="vm.analyzeImage(vm.resolution)" ng-disabled="!vm.hasImage || !vm.hasTextureImage">Compute</button>
     </div>
 
     <!-- shim -->
     <div class="col-sm-12" style="margin-bottom:10px;"></div>
 
     <div class="col-sm-12 text-center">
-        <canvas width="0" height="0" id="imageCanvas"></canvas>
+        <canvas width="0" height="0" id="zoomImageCanvas"></canvas>
     </div>
 
     <!-- shim -->
     <div class="col-sm-12" style="margin-bottom:5px;"></div>
 
     <div class="col-sm-6">
-        <button class="form-control" ng-click="vm.changeScale(.9)" ng-show="vm.hasImage && vm.hasTextureImage">-</button>
+        <button class="form-control" ng-click="vm.changeScale(10/11)" ng-show="vm.hasImage && vm.hasTextureImage">-</button>
     </div>
     <div class="col-sm-6">
-        <button class="form-control" ng-click="vm.changeScale(1.1)" ng-show="vm.hasImage && vm.hasTextureImage">+</button>
+        <button class="form-control" ng-click="vm.changeScale(11/10)" ng-show="vm.hasImage && vm.hasTextureImage">+</button>
     </div>
 
     <!-- shim -->
@@ -48,6 +53,7 @@
         <canvas width="0" height="0" id="outputCanvas"></canvas>
     </div>
 
+    <canvas width="0" height="0" id="imageCanvas" ng-hide="true"></canvas>
     <canvas width="0" height="0" id="textureCanvas" ng-hide="true"></canvas>
     <canvas width="0" height="0" id="secretCanvas" ng-hide="true"></canvas>
 </div>

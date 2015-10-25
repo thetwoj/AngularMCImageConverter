@@ -29,8 +29,8 @@ app.factory('ConversionFactory', ['TextureFactory', 'ImageFactory', function(Tex
         imageAverageData = averageSourceRectangles(sourceCanvas, resolution, imageAverageData);
         blockOutputData = ditherImageToBlocks(imageAverageData, blockOutputData);
 
-        drawConversionOutput(outputCanvas, blockOutputData);
         drawConversionOutput(secretCanvas, blockOutputData);
+        //drawConversionOutput(outputCanvas, blockOutputData);
     };
 
     function ditherImageToBlocks(imageAverageData, blockOutputData) {

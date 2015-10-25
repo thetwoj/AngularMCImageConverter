@@ -17,6 +17,8 @@ app.controller('ConversionController', ['ConversionFactory', 'TextureFactory', '
       vm.pixelData = null;
       vm.resolution = 16;
       vm.totalScale = 1.;
+      vm.ixScale = 0.;
+      vm.iyScale = 0.;
 
       TextureFactory.textureSource('/assets/textures_full_sides.png');
       vm.hasTextureImage = true;
@@ -28,13 +30,18 @@ app.controller('ConversionController', ['ConversionFactory', 'TextureFactory', '
 
       vm.analyzeImage = function(resolution) {
         ConversionFactory.convertToBlocks(resolution);
-        vm.totalScale = 1.;
+        var results = ImageFactory.drawInitialOutput();
+        vm.totalScale = results.minScale;
+        vm.ixScale = results.ixScale;
+        vm.iyScale = results.iyScale;
       }
 
       vm.changeScale = function(scale) {
         vm.totalScale = vm.totalScale * scale;
+        vm.ixScale = vm.ixScale * scale;
+        vm.iyScale = vm.iyScale * scale;
         var outputCanvas = document.getElementById('outputCanvas');
-        ImageFactory.scaleImage(outputCanvas, vm.totalScale);
+        ImageFactory.scaleImage(outputCanvas, vm.totalScale, vm.ixScale, vm.iyScale);
       }
     }
 ]);

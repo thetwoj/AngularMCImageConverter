@@ -28,10 +28,14 @@ app.factory('ImageFactory', [function() {
     };
   }
 
-  var uploadImage = function (file) {
+  function uploadImage(file) {
     if (file && !file.$error) {
+      // Get the hidden source image canvas and context
       var sourceCanvas = document.getElementById('imageCanvas');
       var sourceCtx = sourceCanvas.getContext('2d');
+      // Get the visible, zoomable canvas and context
+      var zoomSourceCanvas = document.getElementById('zoomImageCanvas');
+      var zoomSourceCtx = zoomSourceCanvas.getContext('2d');
       var img = new Image;
       img.src = URL.createObjectURL(file);
 
@@ -39,6 +43,26 @@ app.factory('ImageFactory', [function() {
         sourceCanvas.width = img.width;
         sourceCanvas.height = img.height;
         sourceCtx.drawImage(img, 0, 0);
+
+        zoomSourceCanvas.height = 500;
+        zoomSourceCanvas.width = 500;
+
+        if ((img.height > 500) || (img.width > 500)) {
+          var yScale = zoomSourceCanvas.height / img.height;
+          var xScale = zoomSourceCanvas.width / img.width;
+          var minScale = Math.min(yScale, xScale);
+
+          zoomSourceCanvas.height = img.height * minScale;
+          zoomSourceCanvas.width = img.width * minScale;
+
+          zoomSourceCtx.scale(minScale, minScale);
+          zoomSourceCtx.drawImage(img, 0, 0);
+        } else {
+          zoomSourceCanvas.height = img.height;
+          zoomSourceCanvas.width = img.width;
+
+          zoomSourceCtx.drawImage(img, 0, 0);
+        }
       }
     }
   };
@@ -58,20 +82,54 @@ app.factory('ImageFactory', [function() {
     return rectangleData;
   }
 
-  function scaleImage(canvas, scale) {
+  function drawInitialOutput() {
+    var zoomSourceCanvas = document.getElementById('zoomImageCanvas');
+    var outputCanvas = document.getElementById('outputCanvas');
+    var secretCanvas = document.getElementById('secretCanvas');
+    var outputCtx = outputCanvas.getContext('2d');
+    var yScale = zoomSourceCanvas.height / secretCanvas.height;
+    var xScale = zoomSourceCanvas.width / secretCanvas.width;
+    var minScale = Math.min(yScale, xScale);
+
+    outputCanvas.height = zoomSourceCanvas.height;
+    outputCanvas.width = zoomSourceCanvas.width;
+    outputCtx.drawImage(secretCanvas, 0, 0, secretCanvas.width, secretCanvas.height,
+      0, 0, outputCanvas.width, outputCanvas.height);
+
+    var iyScale = outputCanvas.height / 1000;
+    var ixScale = outputCanvas.width / 1000;
+
+    return {
+      minScale: minScale,
+      ixScale: ixScale,
+      iyScale: iyScale
+    }
+  };
+
+  function scaleImage(canvas, scale, ixScale, iyScale) {
     var ctx = canvas.getContext('2d');
     var secretCanvas = document.getElementById('secretCanvas');
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    canvas.width = secretCanvas.width * scale;
-    canvas.height = secretCanvas.height * scale;
-    ctx.scale(scale, scale);
-    ctx.drawImage(secretCanvas, 0, 0);
+    canvas.width = Math.min(secretCanvas.width * scale, 1000);
+    canvas.height = Math.min(secretCanvas.height * scale, 1000);
+
+    var sourcexScalar = Math.min(1, 1/ixScale);
+    var sourceyScalar = Math.min(1, 1/iyScale);
+
+    var drawWidth = Math.min(canvas.width, 1000);
+    var drawHeight = Math.min(canvas.height, 1000);
+
+    ctx.drawImage(secretCanvas, 0, 0,
+      secretCanvas.width * sourcexScalar,
+      secretCanvas.height * sourceyScalar,
+      0, 0, drawWidth, drawHeight);
   }
 
   return {
     rgbValue: rgbValue,
     uploadImage: uploadImage,
+    drawInitialOutput: drawInitialOutput,
     scaleImage: scaleImage,
     getImageRectangle: getImageRectangle
   }
