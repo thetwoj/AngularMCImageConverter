@@ -32,28 +32,27 @@
     <!-- shim -->
     <div class="col-sm-12" style="margin-bottom:10px;"></div>
 
-    <div class="col-sm-12 text-center">
-        <canvas width="0" height="0" id="zoomImageCanvas"></canvas>
+    <div class="col-lg-6 text-center">
+        <canvas width="540" height="540" id="zoomSourceCanvas" style="border:1px solid #000000;"></canvas>
+    </div>
+    <div class="col-lg-6 text-center">
+        <canvas width="540" height="540" id="zoomOutputCanvas" style="border:1px solid #000000;"></canvas>
     </div>
 
     <!-- shim -->
     <div class="col-sm-12" style="margin-bottom:5px;"></div>
 
     <div class="col-sm-6">
-        <button class="form-control" ng-click="vm.changeScale(10/11)" ng-show="vm.hasImage && vm.hasTextureImage">-</button>
+        <button class="form-control" ng-click="vm.changeOutputScale(10/11)" ng-show="vm.hasImage && vm.hasTextureImage">-</button>
     </div>
     <div class="col-sm-6">
-        <button class="form-control" ng-click="vm.changeScale(11/10)" ng-show="vm.hasImage && vm.hasTextureImage">+</button>
+        <button class="form-control" ng-click="vm.changeOutputScale(11/10)" ng-show="vm.hasImage && vm.hasTextureImage">+</button>
     </div>
 
     <!-- shim -->
     <div class="col-sm-12" style="margin-bottom:10px;"></div>
 
-    <div class="col-sm-12 text-center">
-        <canvas width="0" height="0" id="outputCanvas"></canvas>
-    </div>
-
-    <canvas width="0" height="0" id="imageCanvas" ng-hide="true"></canvas>
-    <canvas width="0" height="0" id="textureCanvas" ng-hide="true"></canvas>
-    <canvas width="0" height="0" id="secretCanvas" ng-hide="true"></canvas>
+    <canvas width="0" height="0" id="secretSourceCanvas" ng-hide="true"></canvas>
+    <canvas width="0" height="0" id="secretTextureCanvas" ng-hide="true"></canvas>
+    <canvas width="0" height="0" id="secretOutputCanvas" ng-hide="true"></canvas>
 </div>

@@ -9,7 +9,7 @@ app.factory('TextureFactory', ['$http', 'ImageFactory', function($http, ImageFac
   var rgbToTextureLookupArray = createArray(32, 32, 32);
 
   function textureSource(path) {
-    var canvas = document.getElementById('textureCanvas');
+    var canvas = document.getElementById('secretTextureCanvas');
     var ctx = canvas.getContext('2d');
     var img = new Image;
     img.src = path;
@@ -51,7 +51,7 @@ app.factory('TextureFactory', ['$http', 'ImageFactory', function($http, ImageFac
   }
 
   function analyzeTexture() {
-    var textureCanvas = document.getElementById('textureCanvas');
+    var textureCanvas = document.getElementById('secretTextureCanvas');
     var textureCtx = textureCanvas.getContext('2d');
     var blockIndex = 0;
 

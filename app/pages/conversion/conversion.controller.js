@@ -16,32 +16,37 @@ app.controller('ConversionController', ['ConversionFactory', 'TextureFactory', '
       vm.hasImage = false;
       vm.pixelData = null;
       vm.resolution = 16;
-      vm.totalScale = 1.;
-      vm.ixScale = 0.;
-      vm.iyScale = 0.;
+      vm.drawScale = 1.;
+      //vm.xScale = 0.;
+      //vm.yScale = 0.;
 
       TextureFactory.textureSource('/assets/textures_full_sides.png');
       vm.hasTextureImage = true;
 
       vm.uploadImage = function(file) {
-        ImageFactory.uploadImage(file);
-        vm.hasImage = true;
-      }
+        ImageFactory.uploadImage(file).then(function(results) {
+          vm.drawScale = results.initialDrawScale;
+          vm.hasImage = true;
+        }, function(results){
+          console.log('error - ' + results);
+        });
+      };
 
       vm.analyzeImage = function(resolution) {
         ConversionFactory.convertToBlocks(resolution);
-        var results = ImageFactory.drawInitialOutput();
-        vm.totalScale = results.minScale;
-        vm.ixScale = results.ixScale;
-        vm.iyScale = results.iyScale;
-      }
+        //var results =
+        ImageFactory.drawInitialOutput(vm.drawScale);
+        //vm.xScale = results.xScale;
+        //vm.yScale = results.yScale;
+      };
 
-      vm.changeScale = function(scale) {
-        vm.totalScale = vm.totalScale * scale;
-        vm.ixScale = vm.ixScale * scale;
-        vm.iyScale = vm.iyScale * scale;
-        var outputCanvas = document.getElementById('outputCanvas');
-        ImageFactory.scaleImage(outputCanvas, vm.totalScale, vm.ixScale, vm.iyScale);
-      }
+      vm.changeOutputScale = function(scale) {
+        vm.drawScale = vm.drawScale * scale;
+        //vm.xScale = vm.xScale * scale;
+        //vm.yScale = vm.yScale * scale;
+        var zoomSourceCanvas = document.getElementById('zoomSourceCanvas');
+        var zoomOutputCanvas = document.getElementById('zoomOutputCanvas');
+        ImageFactory.scaleImages(zoomSourceCanvas, zoomOutputCanvas, vm.drawScale);//, vm.xScale, vm.yScale);
+      };
     }
 ]);
