@@ -3,6 +3,9 @@
  */
 var app = angular.module('myApp.conversion');
 
+/*
+Constant the indicates the height/width of the visible source/output canvases
+ */
 var CANVAS_DIMENSIONS = 540;
 
 app.factory('ImageFactory', ['$q', function($q) {
@@ -30,24 +33,48 @@ app.factory('ImageFactory', ['$q', function($q) {
     };
   }
 
+  /*
+  Function that handles the initial uploading of the image and setting the secretSourceCanvas
+  and zoomSourceCanvas
+   */
   function uploadImage(file) {
+    /*
+    Use $q so that we can return a promise the will resolve when the image finishes loading
+     */
     var deferred = $q.defer();
     if (file && !file.$error) {
-      var sourceCanvas = document.getElementById('secretSourceCanvas');
-      var sourceCtx = sourceCanvas.getContext('2d');
+      var secretSourceCanvas = document.getElementById('secretSourceCanvas');
+      var secretOutputCanvas = document.getElementById('secretOutputCanvas');
       var zoomSourceCanvas = document.getElementById('zoomSourceCanvas');
+      var zoomOutputCanvas = document.getElementById('zoomOutputCanvas');
+      var secretSourceCtx = secretSourceCanvas.getContext('2d');
+      var secretOutputCtx = secretOutputCanvas.getContext('2d');
       var zoomSourceCtx = zoomSourceCanvas.getContext('2d');
+      var zoomOutputCtx = zoomOutputCanvas.getContext('2d');
+
+      /*
+       Clear all current canvases
+        */
+      secretSourceCtx.clearRect(0, 0, secretSourceCanvas.width, secretSourceCanvas.height);
+      secretOutputCtx.clearRect(0, 0, secretOutputCanvas.width, secretOutputCanvas.height);
+      zoomSourceCtx.clearRect(0, 0, CANVAS_DIMENSIONS, CANVAS_DIMENSIONS);
+      zoomOutputCtx.clearRect(0, 0, CANVAS_DIMENSIONS, CANVAS_DIMENSIONS);
 
       var uploadedImg = new Image;
       uploadedImg.src = URL.createObjectURL(file);
 
+      /*
+       When the image finishes uploading update the secret and visible source canvases
+        */
       uploadedImg.onload = function () {
-        sourceCanvas.width = uploadedImg.width;
-        sourceCanvas.height = uploadedImg.height;
-        sourceCtx.drawImage(uploadedImg, 0, 0);
+        secretSourceCanvas.width = uploadedImg.width;
+        secretSourceCanvas.height = uploadedImg.height;
+        secretSourceCtx.drawImage(uploadedImg, 0, 0);
 
         zoomSourceCanvas.height = CANVAS_DIMENSIONS;
         zoomSourceCanvas.width = CANVAS_DIMENSIONS;
+        zoomOutputCanvas.height = CANVAS_DIMENSIONS;
+        zoomOutputCanvas.width = CANVAS_DIMENSIONS;
 
         var initialDrawScale;
 
@@ -63,17 +90,25 @@ app.factory('ImageFactory', ['$q', function($q) {
           zoomSourceCtx.drawImage(uploadedImg, 0, 0);
           initialDrawScale = 1.;
         }
+
         /*
         Resolve the promise now that the source image is done loading
          */
         deferred.resolve({
-          initialDrawScale: initialDrawScale
+          initialDrawScale: initialDrawScale,
+          sourceImage: uploadedImg
         });
       }
     }
     return deferred.promise;
-  };
+  }
 
+  /*
+  Function that returns an array with RGBT data for a given sub-rectangle withing the provided image
+
+  The math is based around the number 4 because the entireImage.subarray call returns
+  a 1D array that contains four values for each pixel - R, G, B, and transparency
+   */
   function getImageRectangle(entireImage, x, y, width, height, canvas) {
     var rectangleData = [];
     for (var xIndex = x; xIndex < x + width; xIndex += 1) {
@@ -89,64 +124,30 @@ app.factory('ImageFactory', ['$q', function($q) {
     return rectangleData;
   }
 
+  /*
+  Function responsible for drawing the initial output from the secretOutputCanvas
+  to the zoomOutputCanvas
+   */
   function drawInitialOutput(scale) {
     var secretSourceCanvas = document.getElementById('secretSourceCanvas');
     var secretOutputCanvas = document.getElementById('secretOutputCanvas');
     var zoomOutputCanvas = document.getElementById('zoomOutputCanvas');
     var zoomOutputCanvas = zoomOutputCanvas.getContext('2d');
 
-    zoomOutputCanvas.drawImage(secretOutputCanvas,
-      0, 0,
-      secretOutputCanvas.width,
-      secretOutputCanvas.height,
-      0, 0,
-      secretSourceCanvas.width * scale,
-      secretSourceCanvas.height * scale);
+    zoomOutputCanvas.drawImage(secretOutputCanvas, 0, 0);//,
+      //secretOutputCanvas.width,
+      //secretOutputCanvas.height),
+      //0, 0,
+      //secretSourceCanvas.width * scale,
+      //secretSourceCanvas.height * scale);
 
-    /*
-    var xScale = zoomOutputCanvas.width / CANVAS_DIMENSIONS;
-    var yScale = zoomOutputCanvas.height / CANVAS_DIMENSIONS;
-
-    return {
-      xScale: xScale,
-      yScale: yScale
-    }
-    */
     return;
-  };
-
-  //function scaleImage(canvas, scale, xScale, yScale) {
-  function scaleImages(sourceCanvas, outputCanvas, scale) {
-    var sourceCtx = sourceCanvas.getContext('2d');
-    var outputCtx = outputCanvas.getContext('2d');
-    var secretSourceCanvas = document.getElementById('secretSourceCanvas');
-    var secretOutputCanvas = document.getElementById('secretOutputCanvas');
-
-    sourceCtx.clearRect(0, 0, CANVAS_DIMENSIONS, CANVAS_DIMENSIONS);
-    outputCtx.clearRect(0, 0, CANVAS_DIMENSIONS, CANVAS_DIMENSIONS);
-
-    //var xSourceScalar = Math.min(1, 1/xScale);
-    //var ySourceScalar = Math.min(1, 1/yScale);
-
-    var drawWidth = Math.min(secretSourceCanvas.width * scale, CANVAS_DIMENSIONS);
-    var drawHeight = Math.min(secretSourceCanvas.height * scale, CANVAS_DIMENSIONS);
-
-    sourceCtx.drawImage(secretSourceCanvas, 0, 0,
-      secretSourceCanvas.width * 1/scale,
-      secretSourceCanvas.height * 1/scale,
-      0, 0, drawWidth, drawHeight);
-
-    outputCtx.drawImage(secretOutputCanvas, 0, 0,
-      secretOutputCanvas.width * 1/scale,
-      secretOutputCanvas.height * 1/scale,
-      0, 0, drawWidth, drawHeight);
   }
 
   return {
     rgbValue: rgbValue,
     uploadImage: uploadImage,
     drawInitialOutput: drawInitialOutput,
-    scaleImages: scaleImages,
     getImageRectangle: getImageRectangle
   }
 }]);

@@ -26,7 +26,7 @@
         <button class="form-control" type="file" ngf-select="vm.uploadImage($file)" accept="image/*" ngf-max-size="5MB">Source image</button>
     </div>
     <div class="col-sm-6">
-        <button class="form-control" ng-click="vm.analyzeImage(vm.resolution)" ng-disabled="!vm.hasImage || !vm.hasTextureImage">Compute</button>
+        <button class="form-control" ng-click="vm.analyzeImage()" ng-disabled="!vm.hasImage || !vm.hasTextureImage">Compute</button>
     </div>
 
     <!-- shim -->
@@ -37,16 +37,6 @@
     </div>
     <div class="col-lg-6 text-center">
         <canvas width="540" height="540" id="zoomOutputCanvas" style="border:1px solid #000000;"></canvas>
-    </div>
-
-    <!-- shim -->
-    <div class="col-sm-12" style="margin-bottom:5px;"></div>
-
-    <div class="col-sm-6">
-        <button class="form-control" ng-click="vm.changeOutputScale(10/11)" ng-show="vm.hasImage && vm.hasTextureImage">-</button>
-    </div>
-    <div class="col-sm-6">
-        <button class="form-control" ng-click="vm.changeOutputScale(11/10)" ng-show="vm.hasImage && vm.hasTextureImage">+</button>
     </div>
 
     <!-- shim -->

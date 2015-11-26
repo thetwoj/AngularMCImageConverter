@@ -19,12 +19,12 @@ app.factory('TextureFactory', ['$http', 'ImageFactory', function($http, ImageFac
       canvas.height = img.height;
       ctx.drawImage(img, 0, 0);
       analyzeTexture();
-    }
+    };
 
     $http.get('/assets/matrixData.txt').then(function(response){
       analyzeLookupTableInputData(response.data);
     });
-  };
+  }
 
   function analyzeLookupTableInputData(rawMatrixData){
     var rawLookupTableValues = rawMatrixData.split(';');
