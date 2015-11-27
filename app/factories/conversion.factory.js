@@ -8,6 +8,10 @@ app.factory('ConversionFactory', ['TextureFactory', 'ImageFactory', function(Tex
   var textureBlockImages;
   var rgbToTextureLookupArray;
 
+  /*
+  "Master" function that calls all the sub-functions necessary to convert
+  the source image to the blocks provided in the texture files
+   */
   var convertToBlocks = function (resolution) {
     textureAverageRgbValues = TextureFactory.textureAverageRgbValues;
     textureBlockImages = TextureFactory.textureBlockImages;
@@ -101,9 +105,14 @@ app.factory('ConversionFactory', ['TextureFactory', 'ImageFactory', function(Tex
       [Math.max(0,Math.min(31,Math.floor(sourceRgbValue.bValue/8)))];
   }
 
+  /*
+   Handy function for easily creating multi-dimensional arrays
+
+   Credit: Matthew Crumley
+   http://stackoverflow.com/questions/966225/how-can-i-create-a-two-dimensional-array-in-javascript
+   */
   function createArray(length) {
-    var arr = new Array(length || 0),
-      i = length;
+    var arr = new Array(length || 0), i = length;
     if (arguments.length > 1) {
       var args = Array.prototype.slice.call(arguments, 1);
       while(i--) arr[length-1 - i] = createArray.apply(this, args);

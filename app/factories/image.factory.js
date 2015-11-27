@@ -9,6 +9,9 @@ Constant the indicates the height/width of the visible source/output canvases
 var CANVAS_DIMENSIONS = 540;
 
 app.factory('ImageFactory', ['$q', function($q) {
+  /*
+  Function that manages common RGB math
+   */
   function rgbValue(rValue, gValue, bValue) {
     this.rValue = rValue;
     this.gValue = gValue;
@@ -38,9 +41,7 @@ app.factory('ImageFactory', ['$q', function($q) {
   and zoomSourceCanvas
    */
   function uploadImage(file) {
-    /*
-    Use $q so that we can return a promise the will resolve when the image finishes loading
-     */
+    // Use $q so that we can return a promise the will resolve when the image finishes loading
     var deferred = $q.defer();
     if (file && !file.$error) {
       var secretSourceCanvas = document.getElementById('secretSourceCanvas');
@@ -52,9 +53,7 @@ app.factory('ImageFactory', ['$q', function($q) {
       var zoomSourceCtx = zoomSourceCanvas.getContext('2d');
       var zoomOutputCtx = zoomOutputCanvas.getContext('2d');
 
-      /*
-       Clear all current canvases
-        */
+      // Clear all current canvases
       secretSourceCtx.clearRect(0, 0, secretSourceCanvas.width, secretSourceCanvas.height);
       secretOutputCtx.clearRect(0, 0, secretOutputCanvas.width, secretOutputCanvas.height);
       zoomSourceCtx.clearRect(0, 0, CANVAS_DIMENSIONS, CANVAS_DIMENSIONS);
@@ -63,9 +62,7 @@ app.factory('ImageFactory', ['$q', function($q) {
       var uploadedImg = new Image;
       uploadedImg.src = URL.createObjectURL(file);
 
-      /*
-       When the image finishes uploading update the secret and visible source canvases
-        */
+      // When the image finishes uploading update the secret and visible source canvases
       uploadedImg.onload = function () {
         secretSourceCanvas.width = uploadedImg.width;
         secretSourceCanvas.height = uploadedImg.height;
@@ -91,9 +88,7 @@ app.factory('ImageFactory', ['$q', function($q) {
           initialDrawScale = 1.;
         }
 
-        /*
-        Resolve the promise now that the source image is done loading
-         */
+        // Resolve the promise now that the source image is done loading
         deferred.resolve({
           initialDrawScale: initialDrawScale,
           sourceImage: uploadedImg
@@ -128,20 +123,11 @@ app.factory('ImageFactory', ['$q', function($q) {
   Function responsible for drawing the initial output from the secretOutputCanvas
   to the zoomOutputCanvas
    */
-  function drawInitialOutput(scale) {
-    var secretSourceCanvas = document.getElementById('secretSourceCanvas');
+  function drawInitialOutput() {
     var secretOutputCanvas = document.getElementById('secretOutputCanvas');
     var zoomOutputCanvas = document.getElementById('zoomOutputCanvas');
-    var zoomOutputCanvas = zoomOutputCanvas.getContext('2d');
 
-    zoomOutputCanvas.drawImage(secretOutputCanvas, 0, 0);//,
-      //secretOutputCanvas.width,
-      //secretOutputCanvas.height),
-      //0, 0,
-      //secretSourceCanvas.width * scale,
-      //secretSourceCanvas.height * scale);
-
-    return;
+    zoomOutputCanvas.drawImage(secretOutputCanvas, 0, 0);
   }
 
   return {
