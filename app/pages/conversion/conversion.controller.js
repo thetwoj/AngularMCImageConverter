@@ -75,7 +75,6 @@ app.controller('ConversionController', ['ConversionFactory', 'TextureFactory', '
 
     /*
      Compute the output image from the supplied source image
-     testing commit from webstorm
      */
     vm.analyzeImage = function() {
       var zoomOutputCanvas = document.getElementById('zoomOutputCanvas');
