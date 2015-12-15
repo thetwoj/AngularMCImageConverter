@@ -2,6 +2,6 @@
     background: #BABABA;
 }
 
-/*.container {*/
-    /*background: #F0F0EE;*/
-/*}*/
+.slider.slider-horizontal {
+    width: 100%;
+}

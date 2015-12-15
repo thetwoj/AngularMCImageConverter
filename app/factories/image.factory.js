@@ -68,6 +68,10 @@ app.factory('ImageFactory', ['$q', function($q) {
         secretSourceCanvas.height = uploadedImg.height;
         secretSourceCtx.drawImage(uploadedImg, 0, 0);
 
+        //TODO fix this shitty math for large images
+        var resolutionMin = Math.floor(Math.max((uploadedImg.width * uploadedImg.height) / 50000, 1));
+        var resolutionMax = Math.floor(Math.max((uploadedImg.width * uploadedImg.height) / 2500, 1));
+
         zoomSourceCanvas.height = CANVAS_DIMENSIONS;
         zoomSourceCanvas.width = CANVAS_DIMENSIONS;
         zoomOutputCanvas.height = CANVAS_DIMENSIONS;
@@ -91,7 +95,9 @@ app.factory('ImageFactory', ['$q', function($q) {
         // Resolve the promise now that the source image is done loading
         deferred.resolve({
           initialDrawScale: initialDrawScale,
-          sourceImage: uploadedImg
+          sourceImage: uploadedImg,
+          resolutionMin: resolutionMin,
+          resolutionMax: resolutionMax
         });
       }
     }
@@ -126,8 +132,9 @@ app.factory('ImageFactory', ['$q', function($q) {
   function drawInitialOutput() {
     var secretOutputCanvas = document.getElementById('secretOutputCanvas');
     var zoomOutputCanvas = document.getElementById('zoomOutputCanvas');
+    var zoomOutputCtx = zoomOutputCanvas.getContext('2d');
 
-    zoomOutputCanvas.drawImage(secretOutputCanvas, 0, 0);
+    zoomOutputCtx.drawImage(secretOutputCanvas, 0, 0);
   }
 
   return {
