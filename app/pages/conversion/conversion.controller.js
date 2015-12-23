@@ -16,6 +16,8 @@ app.controller('ConversionController', ['ConversionFactory', 'TextureFactory', '
     vm.hasImage = false;
     vm.pixelData = null;
     vm.resolution = 16;
+    vm.resolutionMax = 20;
+    vm.resolutionMin = 1;
     vm.drawScale = 1.;
     vm.lastX = 0;
     vm.lastY = 0;
@@ -25,6 +27,11 @@ app.controller('ConversionController', ['ConversionFactory', 'TextureFactory', '
 
     vm.uploadImage = function(file) {
       ImageFactory.uploadImage(file).then(function(results) {
+        vm.resolutionMax = results.resolutionMax;
+        vm.resolutionMin = results.resolutionMin;
+        vm.resolution = Math.floor(((results.resolutionMax - results.resolutionMin) / 4) + results.resolutionMin);
+        console.log(results);
+
         vm.drawScale = results.initialDrawScale;
         vm.hasImage = true;
         vm.sourceImage = results.sourceImage;
