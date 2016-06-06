@@ -68,9 +68,9 @@ app.factory('ImageFactory', ['$q', function($q) {
         secretSourceCanvas.height = uploadedImg.height;
         secretSourceCtx.drawImage(uploadedImg, 0, 0);
 
-        //TODO fix this shitty math for large images
-        var resolutionMin = Math.floor(Math.max((uploadedImg.width * uploadedImg.height) / 50000, 1));
-        var resolutionMax = Math.floor(Math.max((uploadedImg.width * uploadedImg.height) / 2500, 1));
+        // Use fractional exponents to get a min and max resolution of output that scales well with image resolution
+        var resolutionMin = Math.floor(Math.max(Math.sqrt(Math.pow(uploadedImg.width * uploadedImg.height, 1/3)), 1));
+        var resolutionMax = Math.floor(Math.max(Math.pow(uploadedImg.width * uploadedImg.height, 1/4), 1));
 
         zoomSourceCanvas.height = CANVAS_DIMENSIONS;
         zoomSourceCanvas.width = CANVAS_DIMENSIONS;

@@ -9,8 +9,8 @@ app.config(['$routeProvider', function($routeProvider) {
   });
 }]);
 
-app.controller('ConversionController', ['ConversionFactory', 'TextureFactory', 'ImageFactory',
-  function(ConversionFactory, TextureFactory, ImageFactory) {
+app.controller('ConversionController', ['ConversionFactory', 'TextureFactory', 'ImageFactory', '$timeout',
+  function(ConversionFactory, TextureFactory, ImageFactory, $timeout) {
     var vm = this;
     vm.hasTextureImage = false;
     vm.hasImage = false;
@@ -21,6 +21,7 @@ app.controller('ConversionController', ['ConversionFactory', 'TextureFactory', '
     vm.drawScale = 1.;
     vm.lastX = 0;
     vm.lastY = 0;
+    vm.loading = false;
 
     TextureFactory.textureSource('/assets/textures_full_sides.png');
     vm.hasTextureImage = true;
@@ -30,7 +31,6 @@ app.controller('ConversionController', ['ConversionFactory', 'TextureFactory', '
         vm.resolutionMax = results.resolutionMax;
         vm.resolutionMin = results.resolutionMin;
         vm.resolution = Math.floor(((results.resolutionMax - results.resolutionMin) / 4) + results.resolutionMin);
-        console.log(results);
 
         vm.drawScale = results.initialDrawScale;
         vm.hasImage = true;
@@ -84,60 +84,64 @@ app.controller('ConversionController', ['ConversionFactory', 'TextureFactory', '
      Compute the output image from the supplied source image
      */
     vm.analyzeImage = function() {
-      var zoomOutputCanvas = document.getElementById('zoomOutputCanvas');
-      var zoomSourceCanvas = document.getElementById('zoomSourceCanvas');
-      var zoomSourceCtx = zoomSourceCanvas.getContext('2d');
-      var zoomOutputCtx = zoomOutputCanvas.getContext('2d');
+      vm.loading = true;
+      // Timeout gives the DOM 15ms to load the spinner and disable elements, otherwise the client
+      // will start processing the image too quickly and the digest cycle won't finish until after
+      // the image analyzation is complete, never showing the spinner
+      $timeout(function() {
+        var zoomOutputCanvas = document.getElementById('zoomOutputCanvas');
+        var zoomSourceCanvas = document.getElementById('zoomSourceCanvas');
+        var zoomSourceCtx = zoomSourceCanvas.getContext('2d');
+        var zoomOutputCtx = zoomOutputCanvas.getContext('2d');
 
-      //Add zoom listeners to the visible output canvas if they don't exist
-      if (!zoomOutputCanvas.listeners) {
-        zoomOutputCanvas.addEventListener('DOMMouseScroll', handleScroll, false);
-        zoomOutputCanvas.addEventListener('mousewheel', handleScroll, false);
-      }
-
-      //Reset the transformation matrices of both visible canvases
-      zoomSourceCtx.setTransform(1,0,0,1,0,0);
-      zoomSourceCtx.scale(vm.drawScale, vm.drawScale);
-      zoomOutputCtx.setTransform(1,0,0,1,0,0);
-      zoomOutputCtx.scale(vm.drawScale * (vm.resolution/16), vm.drawScale * (vm.resolution/16));
-      ConversionFactory.convertToBlocks(vm.resolution);
-      ImageFactory.drawInitialOutput();
-      trackTransforms(zoomOutputCtx);
-
-      //Handle dragging image in output canvas
-      zoomOutputCanvas.addEventListener('mousedown',function(evt){
-        document.body.style.mozUserSelect = document.body.style.webkitUserSelect = document.body.style.userSelect = 'none';
-        vm.lastX = evt.offsetX || (evt.pageX - zoomOutputCanvas.offsetLeft);
-        vm.lastY = evt.offsetY || (evt.pageY - zoomOutputCanvas.offsetTop);
-        // Adjust the lastX and lastY values to take into account
-        // the scaling present in the visible output canvas
-        vm.lastX = vm.lastX * (16/vm.resolution);
-        vm.lastY = vm.lastY * (16/vm.resolution);
-        vm.dragStart = zoomOutputCtx.transformedPoint(vm.lastX,vm.lastY);
-        vm.dragged = false;
-      },false);
-      zoomOutputCanvas.addEventListener('mousemove',function(evt){
-        vm.lastX = evt.offsetX || (evt.pageX - zoomOutputCanvas.offsetLeft);
-        vm.lastY = evt.offsetY || (evt.pageY - zoomOutputCanvas.offsetTop);
-        // Adjust the lastX and lastY values to take into account
-        // the scaling present in the visible output canvas
-        vm.lastX = vm.lastX * (16/vm.resolution);
-        vm.lastY = vm.lastY * (16/vm.resolution);
-        vm.dragged = true;
-        if (vm.dragStart){
-          var pt = zoomOutputCtx.transformedPoint(vm.lastX,vm.lastY);
-          zoomSourceCtx.translate(pt.x-vm.dragStart.x,pt.y-vm.dragStart.y);
-          zoomOutputCtx.translate((pt.x-vm.dragStart.x) * (16/vm.resolution),
-            (pt.y-vm.dragStart.y) * (16/vm.resolution));
-          redraw();
+        //Add zoom listeners to the visible output canvas if they don't exist
+        if (!zoomOutputCanvas.listeners) {
+          zoomOutputCanvas.addEventListener('DOMMouseScroll', handleScroll, false);
+          zoomOutputCanvas.addEventListener('mousewheel', handleScroll, false);
         }
-      },false);
-      zoomOutputCanvas.addEventListener('mouseup',function(){
-        vm.dragStart = null;
-        redraw();
-      },false);
 
-      redraw();
+        //Reset the transformation matrices of both visible canvases
+        zoomSourceCtx.setTransform(1, 0, 0, 1, 0, 0);
+        zoomSourceCtx.scale(vm.drawScale, vm.drawScale);
+        zoomOutputCtx.setTransform(1, 0, 0, 1, 0, 0);
+        trackTransforms(zoomOutputCtx);
+        zoomOutputCtx.scale(vm.drawScale * (vm.resolution / 16), vm.drawScale * (vm.resolution / 16));
+        ConversionFactory.convertToBlocks(vm.resolution);
+        ImageFactory.drawInitialOutput();
+        redraw();
+
+
+        //Handle dragging image in output canvas
+        zoomOutputCanvas.addEventListener('mousedown', function (evt) {
+          document.body.style.mozUserSelect = document.body.style.webkitUserSelect = document.body.style.userSelect = 'none';
+          vm.lastX = evt.offsetX || (evt.pageX - zoomOutputCanvas.offsetLeft);
+          vm.lastY = evt.offsetY || (evt.pageY - zoomOutputCanvas.offsetTop);
+          // Adjust the lastX and lastY values to take into account
+          // the scaling present in the visible output canvas
+          vm.outputDragStart = zoomOutputCtx.transformedPoint(vm.lastX, vm.lastY);
+          vm.outputDragged = false;
+        }, false);
+        zoomOutputCanvas.addEventListener('mousemove', function (evt) {
+          vm.lastX = evt.offsetX || (evt.pageX - zoomOutputCanvas.offsetLeft);
+          vm.lastY = evt.offsetY || (evt.pageY - zoomOutputCanvas.offsetTop);
+          // Adjust the lastX and lastY values to take into account
+          // the scaling present in the visible output canvas
+          vm.outputDragged = true;
+          if (vm.outputDragStart) {
+            var pt = zoomOutputCtx.transformedPoint(vm.lastX, vm.lastY);
+            zoomSourceCtx.translate(pt.x - vm.outputDragStart.x, pt.y - vm.outputDragStart.y);
+            zoomOutputCtx.translate((pt.x - vm.outputDragStart.x) * (16 / vm.resolution),
+              (pt.y - vm.outputDragStart.y) * (16 / vm.resolution));
+            redraw();
+          }
+        }, false);
+        zoomOutputCanvas.addEventListener('mouseup', function () {
+          vm.outputDragStart = null;
+          redraw();
+        }, false);
+
+        vm.loading = false;
+      }, 20);
     };
 
     /*

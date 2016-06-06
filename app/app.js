@@ -6,6 +6,7 @@ var app = angular.module('myApp', [
   'ngFileUpload',
   'ui.bootstrap',
   'ui.bootstrap-slider',
+  'angularSpinner',
   'myApp.conversion'
 ]);
 
