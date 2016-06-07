@@ -58,12 +58,10 @@ app.controller('ConversionController', ['ConversionFactory', 'TextureFactory', '
           vm.lastX = evt.offsetX || (evt.pageX - zoomSourceCanvas.offsetLeft);
           vm.lastY = evt.offsetY || (evt.pageY - zoomSourceCanvas.offsetTop);
           vm.dragStart = zoomSourceCtx.transformedPoint(vm.lastX,vm.lastY);
-          vm.dragged = false;
         },false);
         zoomSourceCanvas.addEventListener('mousemove',function(evt){
           vm.lastX = evt.offsetX || (evt.pageX - zoomSourceCanvas.offsetLeft);
           vm.lastY = evt.offsetY || (evt.pageY - zoomSourceCanvas.offsetTop);
-          vm.dragged = true;
           if (vm.dragStart){
             var pt = zoomSourceCtx.transformedPoint(vm.lastX,vm.lastY);
             zoomSourceCtx.translate(pt.x-vm.dragStart.x,pt.y-vm.dragStart.y);
@@ -110,23 +108,16 @@ app.controller('ConversionController', ['ConversionFactory', 'TextureFactory', '
         ImageFactory.drawInitialOutput();
         redraw();
 
-
         //Handle dragging image in output canvas
         zoomOutputCanvas.addEventListener('mousedown', function (evt) {
           document.body.style.mozUserSelect = document.body.style.webkitUserSelect = document.body.style.userSelect = 'none';
           vm.lastX = evt.offsetX || (evt.pageX - zoomOutputCanvas.offsetLeft);
           vm.lastY = evt.offsetY || (evt.pageY - zoomOutputCanvas.offsetTop);
-          // Adjust the lastX and lastY values to take into account
-          // the scaling present in the visible output canvas
           vm.outputDragStart = zoomOutputCtx.transformedPoint(vm.lastX, vm.lastY);
-          vm.outputDragged = false;
         }, false);
         zoomOutputCanvas.addEventListener('mousemove', function (evt) {
           vm.lastX = evt.offsetX || (evt.pageX - zoomOutputCanvas.offsetLeft);
           vm.lastY = evt.offsetY || (evt.pageY - zoomOutputCanvas.offsetTop);
-          // Adjust the lastX and lastY values to take into account
-          // the scaling present in the visible output canvas
-          vm.outputDragged = true;
           if (vm.outputDragStart) {
             var pt = zoomOutputCtx.transformedPoint(vm.lastX, vm.lastY);
             zoomSourceCtx.translate(pt.x - vm.outputDragStart.x, pt.y - vm.outputDragStart.y);
@@ -207,6 +198,9 @@ app.controller('ConversionController', ['ConversionFactory', 'TextureFactory', '
 
     /*
      Wrapper for SVG transform functions
+
+     ref: http://stackoverflow.com/questions/5189968/zoom-to-cursor-calculations/5526721#5526721
+     ref: http://phrogz.net/tmp/canvas_zoom_to_cursor.html
      */
     function trackTransforms(ctx){
       var svg = document.createElementNS("http://www.w3.org/2000/svg",'svg');
@@ -224,7 +218,6 @@ app.controller('ConversionController', ['ConversionFactory', 'TextureFactory', '
         xform = savedTransforms.pop();
         return restore.call(ctx);
       };
-
       var scale = ctx.scale;
       ctx.scale = function(sx,sy){
         xform = xform.scaleNonUniform(sx,sy);
