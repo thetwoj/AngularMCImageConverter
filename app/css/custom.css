@@ -1,3 +1,9 @@
+.bottom-right {
+    position: fixed;
+    right: 5px;
+    bottom: 5px;
+}
+
 .slider .slider-selection {
     background: #BABABA;
 }
