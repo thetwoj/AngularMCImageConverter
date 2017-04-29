@@ -6,7 +6,7 @@ var app = angular.module('myApp.conversion');
 /*
 Constant the indicates the height/width of the visible source/output canvases
  */
-var CANVAS_DIMENSIONS = 540;
+var MAX_CANVAS_DIMENSION = 540;
 
 app.factory('ImageFactory', ['$q', function($q) {
   /*
@@ -56,8 +56,8 @@ app.factory('ImageFactory', ['$q', function($q) {
       // Clear all current canvases
       secretSourceCtx.clearRect(0, 0, secretSourceCanvas.width, secretSourceCanvas.height);
       secretOutputCtx.clearRect(0, 0, secretOutputCanvas.width, secretOutputCanvas.height);
-      zoomSourceCtx.clearRect(0, 0, CANVAS_DIMENSIONS, CANVAS_DIMENSIONS);
-      zoomOutputCtx.clearRect(0, 0, CANVAS_DIMENSIONS, CANVAS_DIMENSIONS);
+      zoomSourceCtx.clearRect(0, 0, zoomSourceCanvas.width, zoomSourceCanvas.height);
+      zoomOutputCtx.clearRect(0, 0, zoomOutputCanvas.width, zoomOutputCanvas.height);
 
       var uploadedImg = new Image;
       uploadedImg.src = URL.createObjectURL(file);
@@ -73,22 +73,36 @@ app.factory('ImageFactory', ['$q', function($q) {
         var resolutionMin = Math.floor(Math.max(Math.sqrt(Math.pow(uploadedImg.width * uploadedImg.height, 1/3)), 9));
         var resolutionMax = Math.floor(Math.max(Math.pow(uploadedImg.width * uploadedImg.height, 1/4), 1));
 
-        zoomSourceCanvas.height = CANVAS_DIMENSIONS;
-        zoomSourceCanvas.width = CANVAS_DIMENSIONS;
-        zoomOutputCanvas.height = CANVAS_DIMENSIONS;
-        zoomOutputCanvas.width = CANVAS_DIMENSIONS;
+        zoomSourceCanvas.height = MAX_CANVAS_DIMENSION;
+        zoomSourceCanvas.width = MAX_CANVAS_DIMENSION;
+        zoomOutputCanvas.height = MAX_CANVAS_DIMENSION;
+        zoomOutputCanvas.width = MAX_CANVAS_DIMENSION;
 
         var initialDrawScale;
 
-        if ((uploadedImg.height > CANVAS_DIMENSIONS) || (uploadedImg.width > CANVAS_DIMENSIONS)) {
+        if ((uploadedImg.height > MAX_CANVAS_DIMENSION) || (uploadedImg.width > MAX_CANVAS_DIMENSION)) {
           var ySourceScale = zoomSourceCanvas.height / uploadedImg.height;
           var xSourceScale = zoomSourceCanvas.width / uploadedImg.width;
           initialDrawScale = Math.min(ySourceScale, xSourceScale);
+
+          if (uploadedImg.width > uploadedImg.height) {
+            zoomSourceCanvas.height = initialDrawScale < 1 ? uploadedImg.height * initialDrawScale : uploadedImg.height;
+            zoomOutputCanvas.height = initialDrawScale < 1 ? uploadedImg.height * initialDrawScale : uploadedImg.height;
+          }
+          if (uploadedImg.height > uploadedImg.width) {
+            zoomSourceCanvas.width = initialDrawScale < 1 ? uploadedImg.width * initialDrawScale : uploadedImg.width;
+            zoomOutputCanvas.width = initialDrawScale < 1 ? uploadedImg.width * initialDrawScale : uploadedImg.width;
+          }
 
           zoomSourceCtx.scale(initialDrawScale, initialDrawScale);
           zoomSourceCtx.drawImage(uploadedImg, 0, 0);
           zoomSourceCtx.scale(1/initialDrawScale, 1/initialDrawScale);
         } else {
+          zoomSourceCanvas.height = uploadedImg.height;
+          zoomOutputCanvas.height = uploadedImg.height;
+          zoomSourceCanvas.width = uploadedImg.width;
+          zoomOutputCanvas.width = uploadedImg.width;
+
           zoomSourceCtx.drawImage(uploadedImg, 0, 0);
           initialDrawScale = 1.;
         }

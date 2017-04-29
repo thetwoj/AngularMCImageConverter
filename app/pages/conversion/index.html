@@ -3,11 +3,13 @@
         <h1>Minecraft Image Converter <small>do it it's fun</small></h1>
     </div>
 
-    <div class="col-sm-12">
-    <label for="resolution">Output resolution</label>
+    <div class="row margin-bottom-md">
+        <div class="col-sm-12">
+            <label for="resolution">Output resolution</label>
         </div>
+    </div>
 
-    <div class="form-group">
+    <div class="row margin-bottom-md">
         <div class="col-sm-1 col-xs-2 text-center" id="resolution">
             Low
         </div>
@@ -21,34 +23,32 @@
 
     <span us-spinner="{radius:30, width:8, length: 16}" spinner-on="vm.loading"></span>
 
-    <!-- shim -->
-    <div class="col-sm-12" style="margin-bottom:10px;"></div>
-
-    <div class="col-sm-6">
-        <button class="form-control" type="file" ngf-select="vm.uploadImage($file)" accept="image/*" ngf-max-size="5MB" ng-disabled="vm.loading">Source image</button>
-    </div>
-    <div class="col-sm-6">
-        <button class="form-control" ng-click="vm.analyzeImage()" ng-disabled="!vm.hasImage || !vm.hasTextureImage || vm.loading">Compute</button>
-    </div>
-
-    <!-- shim -->
-    <div class="col-sm-12" style="margin-bottom:10px;"></div>
-
-    <div class="col-lg-6 text-center">
-        <canvas width="540" height="540" id="zoomSourceCanvas" style="border:1px solid #000000;"></canvas>
-    </div>
-    <div class="col-lg-6 text-center">
-        <canvas width="540" height="540" id="zoomOutputCanvas" style="border:1px solid #000000;"></canvas>
+    <div class="row margin-bottom-lg">
+        <div class="col-sm-6">
+            <button class="form-control" type="file" ngf-select="vm.uploadImage($file)" accept="image/*" ngf-max-size="5MB" ng-disabled="vm.loading">Source image</button>
+        </div>
+        <div class="mobile-shim"></div>
+        <div class="col-sm-6">
+            <button class="form-control" ng-click="vm.analyzeImage()" ng-disabled="!vm.hasImage || !vm.hasTextureImage || vm.loading">Compute</button>
+        </div>
     </div>
 
-    <!-- shim -->
-    <div class="col-sm-12" style="margin-bottom:10px;"></div>
+    <div class="row" ng-show="vm.hasImage">
+        <div class="col-lg-6 text-center margin-bottom-lg">
+            <canvas class="zoom-canvas" id="zoomSourceCanvas">Input</canvas>
+        </div>
+        <div class="col-lg-6 text-center margin-bottom-lg">
+            <canvas class="zoom-canvas" id="zoomOutputCanvas">Output</canvas>
+        </div>
+    </div>
 
-    <canvas width="0" height="0" id="secretSourceCanvas" ng-hide="true"></canvas>
-    <canvas width="0" height="0" id="secretTextureCanvas" ng-hide="true"></canvas>
-    <canvas width="0" height="0" id="secretOutputCanvas" ng-hide="true"></canvas>
+    <canvas class="hidden-canvas" id="secretSourceCanvas" ng-hide="true"></canvas>
+    <canvas class="hidden-canvas" id="secretTextureCanvas" ng-hide="true"></canvas>
+    <canvas class="hidden-canvas" id="secretOutputCanvas" ng-hide="true"></canvas>
 
-    <div class="bottom-right">
-	view on <a href="https://github.com/thetwoj/AngularMCImageConverter">github</a>
+    <div class="col-sm-12 footer-github">
+        <span class="bottom-right">
+            view on <a href="https://github.com/thetwoj/AngularMCImageConverter">github</a>
+        </span>
     </div>
 </div>

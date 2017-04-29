@@ -1,7 +1,49 @@
 .bottom-right {
-    position: fixed;
+    position: absolute;
     right: 5px;
     bottom: 5px;
+}
+
+.footer-github {
+    height: 15px;
+    width: 100%;
+}
+
+.hidden-canvas {
+    width: 0px;
+    height: 0px;
+}
+
+.margin-bottom-0 {
+    margin-bottom: 0 !important;
+}
+
+.margin-bottom-sm {
+    margin-bottom: 5px !important;
+}
+
+.margin-bottom-md {
+    margin-bottom: 10px !important;
+}
+
+.margin-bottom-lg {
+    margin-bottom: 15px !important;
+}
+
+.padding-bottom-0 {
+    padding-bottom: 0 !important;
+}
+
+.padding-bottom-sm {
+    padding-bottom: 5px !important;
+}
+
+.padding-bottom-md {
+    padding-bottom: 10px !important;
+}
+
+.padding-bottom-lg {
+    padding-bottom: 15px !important;
 }
 
 .slider .slider-selection {
@@ -10,4 +52,33 @@
 
 .slider.slider-horizontal {
     width: 100%;
+}
+
+@media only screen and (max-width: 768px) {
+    .mobile-shim {
+        height: 15px;
+        width: auto;
+    }
+
+    .zoom-canvas {
+        width: auto;
+        height: auto;
+        max-width: 100%;
+        max-height: 100%;
+        border: 1px solid #000000;
+    }
+}
+
+@media only screen and (min-width: 768px) {
+    .mobile-shim {
+        display: none;
+    }
+
+    .zoom-canvas {
+        width: auto;
+        height: auto;
+        max-width: 540px;
+        max-height: 540px;
+        border: 1px solid #000000;
+    }
 }
